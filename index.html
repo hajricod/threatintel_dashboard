@@ -6,7 +6,7 @@
     <title>ThreatIntel :: Cyber Vulnerability Tracker</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter & Cairo for Arabic -->
+    <!-- Google Fonts: Inter, Cairo (Arabic), and Fira Code (Mono) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,172 +26,285 @@
     </script>
 
     <style>
-        .glow-red { box-shadow: 0 0 20px -5px rgba(239, 68, 68, 0.35); }
-        .glow-sky { box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.25); }
+        /* Ambient Animated Background Mesh Orbs */
+        .bg-mesh-container {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .mesh-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.25;
+            animation: orbFloat 20s infinite ease-in-out alternate;
+        }
+
+        .orb-1 {
+            width: 450px;
+            height: 450px;
+            background: #e11d48;
+            top: -100px;
+            left: -100px;
+            animation-duration: 18s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: #0284c7;
+            bottom: -150px;
+            right: -100px;
+            animation-duration: 24s;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: #4f46e5;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-duration: 22s;
+            animation-delay: -10s;
+        }
+
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, 40px) scale(1.15); }
+            100% { transform: translate(-40px, 80px) scale(0.9); }
+        }
+
+        /* Cyber Grid Overlay */
+        .cyber-grid {
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(to right, rgba(51, 65, 85, 0.1) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(51, 65, 85, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridPan 60s linear infinite;
+        }
+
+        @keyframes gridPan {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 40px; }
+        }
+
+        /* Glassmorphism Design Tokens */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+        }
+        
+        .glow-red {
+            box-shadow: 0 0 30px -5px rgba(239, 68, 68, 0.25);
+        }
+
+        /* Custom Scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #090d16; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #334155; }
         
+        /* Modal Spring Entrance Animation */
+        @keyframes springIn {
+            0% { opacity: 0; transform: scale(0.92) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .animate-spring {
+            animation: springIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Font switching based on text direction */
         [dir="rtl"] .font-sans { font-family: 'Cairo', sans-serif !important; }
         [dir="rtl"] .font-mono { font-family: 'Fira Code', 'Cairo', monospace !important; }
+        
+        .tr-transition {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tr-transition:hover {
+            transform: translateY(-2px);
+            background-color: rgba(30, 41, 59, 0.6);
+        }
     </style>
 </head>
-<body class="h-full flex flex-col text-slate-100 font-sans antialiased selection:bg-rose-900 selection:text-rose-100">
+<body class="h-full flex flex-col text-slate-100 font-sans antialiased selection:bg-rose-900 selection:text-rose-100 relative">
 
-    <!-- Top Zero-Day Alert Banner -->
-    <div class="bg-gradient-to-r from-rose-950 via-red-900 to-rose-950 border-b border-red-700/60 text-white text-xs md:text-sm py-2.5 px-4">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div class="flex items-center gap-3">
-                <span class="flex h-2.5 w-2.5 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                </span>
-                <span class="font-mono text-red-300 font-bold tracking-wide" id="banner-tag">ACTIVE ZERO-DAY ALERT:</span>
-                <span class="text-slate-200" id="banner-text">Google Chrome <strong class="text-white font-mono">CVE-2026-125350</strong> (Use-After-Free) is under active exploitation in the wild.</span>
-            </div>
-            <button onclick="openModal('CVE-2026-125350')" id="banner-btn" class="bg-red-600 hover:bg-red-500 text-white font-mono text-xs px-3 py-1 rounded font-semibold transition shrink-0">
-                View Advisory &amp; Patch
-            </button>
-        </div>
+    <!-- Background Animated Mesh Orbs & Cyber Grid -->
+    <div class="bg-mesh-container">
+        <div class="mesh-orb orb-1"></div>
+        <div class="mesh-orb orb-2"></div>
+        <div class="mesh-orb orb-3"></div>
     </div>
+    <div class="cyber-grid"></div>
 
-    <!-- Navigation Header -->
-    <header class="bg-slate-900/80 border-b border-slate-800 backdrop-blur sticky top-0 z-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-rose-950/80 border border-rose-600/50 flex items-center justify-center glow-red">
-                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                        ThreatIntel <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono border border-slate-700">v2.6.11</span>
-                    </h1>
-                    <p class="text-xs text-slate-400" id="app-subtitle">Real-World Cyber Threat Intelligence &amp; Vulnerability Tracker</p>
-                </div>
-            </div>
+    <!-- Main Wrapper with Relative Z-Index -->
+    <div class="relative z-10 flex flex-col min-h-screen">
 
-            <!-- Language Switcher & Controls -->
-            <div class="flex items-center gap-3">
-                <button onclick="toggleLanguage()" id="lang-toggle-btn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-sky-400 transition">
-                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
-                    <span id="lang-btn-text">العربية</span>
+        <!-- Top Zero-Day Alert Banner -->
+        <div class="bg-gradient-to-r from-rose-950/90 via-red-900/90 to-rose-950/90 backdrop-blur-md border-b border-red-700/60 text-white text-xs md:text-sm py-2.5 px-4">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-2.5 w-2.5 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                    </span>
+                    <span class="font-mono text-red-300 font-bold tracking-wide" id="banner-tag">ACTIVE ZERO-DAY ALERT:</span>
+                    <span class="text-slate-200" id="banner-text">Google Chrome <strong class="text-white font-mono">CVE-2026-125350</strong> (Use-After-Free) is under active exploitation in the wild.</span>
+                </div>
+                <button onclick="openModal('CVE-2026-125350')" id="banner-btn" class="bg-red-600 hover:bg-red-500 text-white font-mono text-xs px-3 py-1 rounded font-semibold transition shrink-0 shadow-md hover:shadow-red-900/50">
+                    View Advisory &amp; Patch
                 </button>
             </div>
         </div>
-    </header>
 
-    <!-- Main Content Area -->
-    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-grow">
-
-        <!-- Metrics Overview Cards -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Total Tracked -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-total-title">Total Vulnerabilities</p>
-                        <h3 class="text-3xl font-bold text-white mt-1 font-mono">8</h3>
+        <!-- Navigation Header -->
+        <header class="glass-panel sticky top-0 z-20 border-b border-slate-800">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-600/50 flex items-center justify-center glow-red">
+                        <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
-                    <div class="p-2 bg-slate-800/80 rounded-lg text-slate-400 border border-slate-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 00-2 2h2a2 2 0 002-2"></path></svg>
+                    <div>
+                        <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                            ThreatIntel <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono border border-slate-700">v2.6.11</span>
+                        </h1>
+                        <p class="text-xs text-slate-400" id="app-subtitle">Real-World Cyber Threat Intelligence &amp; Vulnerability Tracker</p>
                     </div>
                 </div>
-                <div class="mt-4 text-xs text-slate-400" id="metric-total-sub">November 2026 Advisories</div>
-            </div>
 
-            <!-- Actively Exploited -->
-            <div class="bg-slate-900/60 border border-red-900/40 rounded-xl p-5 relative overflow-hidden glow-red">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-mono text-red-400 uppercase tracking-wider font-semibold" id="metric-exploited-title">Actively Exploited</p>
-                        <h3 class="text-3xl font-bold text-red-500 mt-1 font-mono">2</h3>
-                    </div>
-                    <div class="p-2 bg-red-950/60 rounded-lg text-red-400 border border-red-800">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
+                <!-- Language Switcher -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleLanguage()" id="lang-toggle-btn" class="flex items-center gap-2 bg-slate-800/90 hover:bg-slate-700 border border-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold text-sky-400 transition shadow-sm hover:border-sky-500/50">
+                        <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+                        <span id="lang-btn-text">العربية</span>
+                    </button>
                 </div>
-                <div class="mt-4 text-xs text-red-300/80" id="metric-exploited-sub">Chrome &amp; Zyxel Zero-Days</div>
             </div>
+        </header>
 
-            <!-- Highest CVSS -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-cvss-title">Highest CVSS Rating</p>
-                        <h3 class="text-3xl font-bold text-amber-400 mt-1 font-mono">9.8 <span class="text-xs text-slate-400 font-sans font-normal">/ 10</span></h3>
+        <!-- Main Content Area -->
+        <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-grow">
+
+            <!-- Metrics Overview Cards -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Total Tracked -->
+                <div class="glass-panel rounded-xl p-5 relative overflow-hidden transition hover:border-slate-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-total-title">Total Vulnerabilities</p>
+                            <h3 class="text-3xl font-bold text-white mt-1 font-mono">8</h3>
+                        </div>
+                        <div class="p-2.5 bg-slate-800/80 rounded-xl text-slate-400 border border-slate-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 00-2 2h2a2 2 0 002-2"></path></svg>
+                        </div>
                     </div>
-                    <div class="p-2 bg-slate-800/80 rounded-lg text-amber-400 border border-slate-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
+                    <div class="mt-4 text-xs text-slate-400" id="metric-total-sub">November 2026 Advisories</div>
                 </div>
-                <div class="mt-4 text-xs text-slate-400" id="metric-cvss-sub">Pre-Auth Root Overflow</div>
-            </div>
 
-            <!-- CISA KEV Listed -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-kev-title">CISA KEV Listed</p>
-                        <h3 class="text-3xl font-bold text-sky-400 mt-1 font-mono">4</h3>
+                <!-- Actively Exploited -->
+                <div class="glass-panel border-red-900/40 rounded-xl p-5 relative overflow-hidden glow-red transition hover:border-red-600/50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-mono text-red-400 uppercase tracking-wider font-semibold" id="metric-exploited-title">Actively Exploited</p>
+                            <h3 class="text-3xl font-bold text-red-500 mt-1 font-mono">2</h3>
+                        </div>
+                        <div class="p-2.5 bg-red-950/60 rounded-xl text-red-400 border border-red-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
                     </div>
-                    <div class="p-2 bg-slate-800/80 rounded-lg text-sky-400 border border-slate-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    </div>
+                    <div class="mt-4 text-xs text-red-300/80" id="metric-exploited-sub">Chrome &amp; Zyxel Zero-Days</div>
                 </div>
-                <div class="mt-4 text-xs text-slate-400" id="metric-kev-sub">Mandatory Federal Directives</div>
+
+                <!-- Highest CVSS -->
+                <div class="glass-panel rounded-xl p-5 relative overflow-hidden transition hover:border-amber-500/40">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-cvss-title">Highest CVSS Rating</p>
+                            <h3 class="text-3xl font-bold text-amber-400 mt-1 font-mono">9.8 <span class="text-xs text-slate-400 font-sans font-normal">/ 10</span></h3>
+                        </div>
+                        <div class="p-2.5 bg-amber-950/30 rounded-xl text-amber-400 border border-amber-900/50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-slate-400" id="metric-cvss-sub">Pre-Auth Root Overflow</div>
+                </div>
+
+                <!-- CISA KEV Listed -->
+                <div class="glass-panel rounded-xl p-5 relative overflow-hidden transition hover:border-sky-500/40">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-kev-title">CISA KEV Listed</p>
+                            <h3 class="text-3xl font-bold text-sky-400 mt-1 font-mono">4</h3>
+                        </div>
+                        <div class="p-2.5 bg-sky-950/30 rounded-xl text-sky-400 border border-sky-900/50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-slate-400" id="metric-kev-sub">Mandatory Federal Directives</div>
+                </div>
+            </section>
+
+            <!-- Filters & Search Toolbar -->
+            <section class="glass-panel rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full lg:w-96">
+                    <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Search CVE, vendor, component..." class="bg-slate-950/80 border border-slate-800 rounded-lg px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-full font-mono transition">
+                </div>
+
+                <div class="flex flex-wrap gap-2 w-full lg:w-auto items-center">
+                    <span class="text-xs text-slate-400 font-mono mr-1" id="filter-label">Filter:</span>
+                    <button onclick="setFilter('all')" id="filter-all" class="filter-btn active bg-sky-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition shadow-sm">All (8)</button>
+                    <button onclick="setFilter('exploited')" id="filter-exploited" class="filter-btn bg-slate-800/80 text-slate-300 hover:bg-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition">Zero-Days</button>
+                    <button onclick="setFilter('kev')" id="filter-kev" class="filter-btn bg-slate-800/80 text-slate-300 hover:bg-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition">CISA KEV</button>
+                    <button onclick="setFilter('critical')" id="filter-critical" class="filter-btn bg-slate-800/80 text-slate-300 hover:bg-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition">Critical (CVSS 9.0+)</button>
+                </div>
+            </section>
+
+            <!-- Vulnerabilities Data Table -->
+            <section class="glass-panel rounded-xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto custom-scroll">
+                    <table class="w-full text-start border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-950/90 border-b border-slate-800 text-slate-400 font-mono uppercase tracking-wider">
+                                <th class="p-4" id="th-cve">CVE / ID</th>
+                                <th class="p-4" id="th-target">Target &amp; Vendor</th>
+                                <th class="p-4" id="th-type">Vulnerability Type</th>
+                                <th class="p-4 text-center min-w-[130px]" id="th-cvss">CVSS Severity</th>
+                                <th class="p-4" id="th-status">Threat Status</th>
+                                <th class="p-4" id="th-action">Remediation Action</th>
+                                <th class="p-4 text-end" id="th-details">Advisory</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vuln-table-body" class="divide-y divide-slate-800/70 font-mono text-slate-200">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-950/90 backdrop-blur-md border-t border-slate-900 py-6 text-center text-xs text-slate-500 font-mono">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <div id="footer-left">Cyber Threat Intelligence Feed • Bilingual Portal</div>
+                <div id="footer-right">Data sources: NVD, CISA KEV, Android Security Bulletin</div>
             </div>
-        </section>
+        </footer>
 
-        <!-- Filters & Search Toolbar -->
-        <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
-            <div class="relative w-full lg:w-96">
-                <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Search CVE, vendor, component..." class="bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-full font-mono">
-            </div>
+    </div>
 
-            <div class="flex flex-wrap gap-2 w-full lg:w-auto items-center">
-                <span class="text-xs text-slate-400 font-mono mr-1" id="filter-label">Filter:</span>
-                <button onclick="setFilter('all')" id="filter-all" class="filter-btn active bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">All (8)</button>
-                <button onclick="setFilter('exploited')" id="filter-exploited" class="filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">Zero-Days</button>
-                <button onclick="setFilter('kev')" id="filter-kev" class="filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">CISA KEV</button>
-                <button onclick="setFilter('critical')" id="filter-critical" class="filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">Critical (CVSS 9.0+)</button>
-            </div>
-        </section>
-
-        <!-- Vulnerabilities Data Table -->
-        <section class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-            <div class="overflow-x-auto custom-scroll">
-                <table class="w-full text-start border-collapse text-xs">
-                    <thead>
-                        <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 font-mono uppercase tracking-wider">
-                            <th class="p-4" id="th-cve">CVE / ID</th>
-                            <th class="p-4" id="th-target">Target &amp; Vendor</th>
-                            <th class="p-4" id="th-type">Vulnerability Type</th>
-                            <th class="p-4 text-center" id="th-cvss">CVSS</th>
-                            <th class="p-4" id="th-status">Threat Status</th>
-                            <th class="p-4" id="th-action">Remediation Action</th>
-                            <th class="p-4 text-end" id="th-details">Advisory</th>
-                        </tr>
-                    </thead>
-                    <tbody id="vuln-table-body" class="divide-y divide-slate-800/70 font-mono text-slate-200">
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 font-mono">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div id="footer-left">Cyber Threat Intelligence Feed • Bilingual Portal</div>
-            <div id="footer-right">Data sources: NVD, CISA KEV, Android Security Bulletin</div>
-        </div>
-    </footer>
-
-    <!-- Vulnerability Details Modal -->
-    <div id="vuln-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl w-full p-6 space-y-6 relative shadow-2xl overflow-y-auto max-h-[90vh] custom-scroll">
+    <!-- Vulnerability Details Modal Overlay -->
+    <div id="vuln-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 relative shadow-2xl overflow-y-auto max-h-[90vh] custom-scroll animate-spring">
             
             <div class="flex justify-between items-start border-b border-slate-800 pb-4">
                 <div>
@@ -199,13 +312,13 @@
                     <h2 id="modal-cve" class="text-2xl font-bold font-mono text-white mt-2">CVE ID</h2>
                     <p id="modal-target" class="text-xs text-slate-400 mt-1 font-mono">Target</p>
                 </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800 border border-slate-700">
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
             <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4 bg-slate-950 p-4 rounded-lg border border-slate-800 text-xs font-mono">
+                <div class="grid grid-cols-2 gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs font-mono">
                     <div>
                         <span class="text-slate-500 block" id="modal-lbl-cvss">CVSS RATING:</span>
                         <span id="modal-cvss" class="text-lg font-bold text-amber-400">9.0</span>
@@ -218,30 +331,30 @@
 
                 <div>
                     <h3 class="text-xs font-mono uppercase text-slate-400 mb-2 font-bold" id="modal-lbl-impact">Threat &amp; Impact Summary</h3>
-                    <p id="modal-desc" class="text-xs text-slate-300 leading-relaxed bg-slate-950/50 p-3.5 rounded-lg border border-slate-800">
+                    <p id="modal-desc" class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-4 rounded-xl border border-slate-800">
                         Description.
                     </p>
                 </div>
 
                 <div>
                     <h3 class="text-xs font-mono uppercase text-slate-400 mb-2 font-bold" id="modal-lbl-remediation">Remediation Guidance</h3>
-                    <div id="modal-action" class="text-xs text-emerald-400 font-mono bg-emerald-950/30 p-3.5 rounded-lg border border-emerald-900/50 leading-relaxed">
+                    <div id="modal-action" class="text-xs text-emerald-400 font-mono bg-emerald-950/30 p-4 rounded-xl border border-emerald-900/50 leading-relaxed">
                         Action.
                     </div>
                 </div>
             </div>
 
             <div class="border-t border-slate-800 pt-4 flex justify-end">
-                <button onclick="closeModal()" id="modal-close-btn" class="bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs px-4 py-2 rounded-lg transition">
+                <button onclick="closeModal()" id="modal-close-btn" class="bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs px-4 py-2 rounded-xl transition border border-slate-700">
                     Close Advisory
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Data & Language Switcher Engine -->
+    <!-- JavaScript Engine -->
     <script>
-        let currentLang = 'en'; // 'en' or 'ar'
+        let currentLang = 'en';
         let activeFilter = 'all';
 
         const i18n = {
@@ -268,7 +381,7 @@
                 thCve: "CVE / ID",
                 thTarget: "Target & Vendor",
                 thType: "Vulnerability Type",
-                thCvss: "CVSS",
+                thCvss: "CVSS Severity",
                 thStatus: "Threat Status",
                 thAction: "Remediation Action",
                 thDetails: "Advisory",
@@ -303,7 +416,7 @@
                 thCve: "رمز الثغرة",
                 thTarget: "الهدف والشركة المبرمجة",
                 thType: "نوع الثغرة الأمنية",
-                thCvss: "الخطورة",
+                thCvss: "درجة الخطورة",
                 thStatus: "حالة التهديد",
                 thAction: "إجراء المعالجة والتحديث",
                 thDetails: "التفاصيل",
@@ -492,35 +605,46 @@
 
             data.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-800/40 transition cursor-pointer border-b border-slate-800/60';
+                tr.className = 'tr-transition cursor-pointer border-b border-slate-800/60';
                 tr.onclick = () => openModal(item.id);
 
                 let statusBadge = '';
                 if (item.statusType === 'exploited') {
-                    statusBadge = `<span class="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-bold flex items-center gap-1.5 w-max text-[11px]">
+                    statusBadge = `<span class="px-2.5 py-1 rounded-lg bg-red-950/80 text-red-400 border border-red-800/80 font-bold flex items-center gap-1.5 w-max text-[11px]">
                         <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> ${item.status[currentLang]}
                     </span>`;
                 } else if (item.statusType === 'kev') {
-                    statusBadge = `<span class="px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
+                    statusBadge = `<span class="px-2.5 py-1 rounded-lg bg-sky-950/80 text-sky-400 border border-sky-800/80 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
                 } else if (item.statusType === 'patching') {
-                    statusBadge = `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
+                    statusBadge = `<span class="px-2.5 py-1 rounded-lg bg-amber-950/80 text-amber-400 border border-amber-800/80 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
                 } else {
-                    statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
+                    statusBadge = `<span class="px-2.5 py-1 rounded-lg bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
                 }
 
-                let cvssColor = 'text-slate-300';
-                if (item.cvss >= 9.0) cvssColor = 'text-red-400 font-bold';
-                else if (item.cvss >= 8.0) cvssColor = 'text-amber-400 font-bold';
+                let cvssBarColor = 'bg-slate-500';
+                let cvssTextColor = 'text-slate-300';
+                if (item.cvss >= 9.0) { cvssBarColor = 'bg-red-500'; cvssTextColor = 'text-red-400 font-bold'; }
+                else if (item.cvss >= 8.0) { cvssBarColor = 'bg-amber-500'; cvssTextColor = 'text-amber-400 font-bold'; }
+                else if (item.cvss >= 7.0) { cvssBarColor = 'bg-sky-500'; cvssTextColor = 'text-sky-400 font-bold'; }
+
+                const cvssPercent = (item.cvss / 10) * 100;
 
                 tr.innerHTML = `
-                    <td class="p-4 font-bold text-white">${item.id}</td>
+                    <td class="p-4 font-bold text-white font-mono">${item.id}</td>
                     <td class="p-4 text-slate-300 font-sans">${item.target[currentLang]}</td>
                     <td class="p-4 text-slate-400 font-sans">${item.type[currentLang]}</td>
-                    <td class="p-4 text-center font-bold ${cvssColor}">${item.cvss}</td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2 justify-center">
+                            <span class="font-bold font-mono text-xs ${cvssTextColor}">${item.cvss}</span>
+                            <div class="w-16 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="${cvssBarColor} h-1.5 rounded-full" style="width: ${cvssPercent}%"></div>
+                            </div>
+                        </div>
+                    </td>
                     <td class="p-4">${statusBadge}</td>
                     <td class="p-4 text-slate-300 text-xs font-sans">${item.action[currentLang]}</td>
                     <td class="p-4 text-end">
-                        <button class="text-sky-400 hover:text-sky-300 font-mono text-xs">${t.viewBtn}</button>
+                        <button class="text-sky-400 hover:text-sky-300 font-mono text-xs underline-offset-4 hover:underline">${t.viewBtn}</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -549,11 +673,11 @@
         function setFilter(filterType) {
             activeFilter = filterType;
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.className = 'filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition';
+                btn.className = 'filter-btn bg-slate-800/80 text-slate-300 hover:bg-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition';
             });
             const activeBtn = document.getElementById(`filter-${filterType}`);
             if (activeBtn) {
-                activeBtn.className = 'filter-btn active bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition';
+                activeBtn.className = 'filter-btn active bg-sky-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition shadow-sm';
             }
             filterTable();
         }
@@ -573,11 +697,11 @@
             badge.innerText = item.status[currentLang];
 
             if (item.statusType === 'exploited') {
-                badge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-red-950 text-red-400 border border-red-800';
+                badge.className = 'px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-red-950 text-red-400 border border-red-800';
             } else if (item.statusType === 'kev') {
-                badge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-sky-950 text-sky-400 border border-sky-800';
+                badge.className = 'px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-sky-950 text-sky-400 border border-sky-800';
             } else {
-                badge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800';
+                badge.className = 'px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800';
             }
 
             document.getElementById('vuln-modal').classList.remove('hidden');
