@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreatIntel :: Cyber Vulnerability Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Cairo for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        arabic: ['Cairo', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glow-red { box-shadow: 0 0 20px -5px rgba(239, 68, 68, 0.35); }
+        .glow-sky { box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.25); }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #090d16; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        [dir="rtl"] .font-sans { font-family: 'Cairo', sans-serif !important; }
+        [dir="rtl"] .font-mono { font-family: 'Fira Code', 'Cairo', monospace !important; }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-100 font-sans antialiased selection:bg-rose-900 selection:text-rose-100">
+
+    <!-- Top Zero-Day Alert Banner -->
+    <div class="bg-gradient-to-r from-rose-950 via-red-900 to-rose-950 border-b border-red-700/60 text-white text-xs md:text-sm py-2.5 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <span class="flex h-2.5 w-2.5 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                </span>
+                <span class="font-mono text-red-300 font-bold tracking-wide" id="banner-tag">ACTIVE ZERO-DAY ALERT:</span>
+                <span class="text-slate-200" id="banner-text">Google Chrome <strong class="text-white font-mono">CVE-2026-125350</strong> (Use-After-Free) is under active exploitation in the wild.</span>
+            </div>
+            <button onclick="openModal('CVE-2026-125350')" id="banner-btn" class="bg-red-600 hover:bg-red-500 text-white font-mono text-xs px-3 py-1 rounded font-semibold transition shrink-0">
+                View Advisory &amp; Patch
+            </button>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="bg-slate-900/80 border-b border-slate-800 backdrop-blur sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-rose-950/80 border border-rose-600/50 flex items-center justify-center glow-red">
+                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                        ThreatIntel <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono border border-slate-700">v2.6.11</span>
+                    </h1>
+                    <p class="text-xs text-slate-400" id="app-subtitle">Real-World Cyber Threat Intelligence &amp; Vulnerability Tracker</p>
+                </div>
+            </div>
+
+            <!-- Language Switcher & Controls -->
+            <div class="flex items-center gap-3">
+                <button onclick="toggleLanguage()" id="lang-toggle-btn" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold text-sky-400 transition">
+                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+                    <span id="lang-btn-text">العربية</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-grow">
+
+        <!-- Metrics Overview Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Tracked -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-total-title">Total Vulnerabilities</p>
+                        <h3 class="text-3xl font-bold text-white mt-1 font-mono">8</h3>
+                    </div>
+                    <div class="p-2 bg-slate-800/80 rounded-lg text-slate-400 border border-slate-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 00-2 2h2a2 2 0 002-2"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-slate-400" id="metric-total-sub">November 2026 Advisories</div>
+            </div>
+
+            <!-- Actively Exploited -->
+            <div class="bg-slate-900/60 border border-red-900/40 rounded-xl p-5 relative overflow-hidden glow-red">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-mono text-red-400 uppercase tracking-wider font-semibold" id="metric-exploited-title">Actively Exploited</p>
+                        <h3 class="text-3xl font-bold text-red-500 mt-1 font-mono">2</h3>
+                    </div>
+                    <div class="p-2 bg-red-950/60 rounded-lg text-red-400 border border-red-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-red-300/80" id="metric-exploited-sub">Chrome &amp; Zyxel Zero-Days</div>
+            </div>
+
+            <!-- Highest CVSS -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-cvss-title">Highest CVSS Rating</p>
+                        <h3 class="text-3xl font-bold text-amber-400 mt-1 font-mono">9.8 <span class="text-xs text-slate-400 font-sans font-normal">/ 10</span></h3>
+                    </div>
+                    <div class="p-2 bg-slate-800/80 rounded-lg text-amber-400 border border-slate-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-slate-400" id="metric-cvss-sub">Pre-Auth Root Overflow</div>
+            </div>
+
+            <!-- CISA KEV Listed -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 relative overflow-hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-mono text-slate-400 uppercase tracking-wider" id="metric-kev-title">CISA KEV Listed</p>
+                        <h3 class="text-3xl font-bold text-sky-400 mt-1 font-mono">4</h3>
+                    </div>
+                    <div class="p-2 bg-slate-800/80 rounded-lg text-sky-400 border border-slate-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                </div>
+                <div class="mt-4 text-xs text-slate-400" id="metric-kev-sub">Mandatory Federal Directives</div>
+            </div>
+        </section>
+
+        <!-- Filters & Search Toolbar -->
+        <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <div class="relative w-full lg:w-96">
+                <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Search CVE, vendor, component..." class="bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 w-full font-mono">
+            </div>
+
+            <div class="flex flex-wrap gap-2 w-full lg:w-auto items-center">
+                <span class="text-xs text-slate-400 font-mono mr-1" id="filter-label">Filter:</span>
+                <button onclick="setFilter('all')" id="filter-all" class="filter-btn active bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">All (8)</button>
+                <button onclick="setFilter('exploited')" id="filter-exploited" class="filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">Zero-Days</button>
+                <button onclick="setFilter('kev')" id="filter-kev" class="filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">CISA KEV</button>
+                <button onclick="setFilter('critical')" id="filter-critical" class="filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition">Critical (CVSS 9.0+)</button>
+            </div>
+        </section>
+
+        <!-- Vulnerabilities Data Table -->
+        <section class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto custom-scroll">
+                <table class="w-full text-start border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-950 border-b border-slate-800 text-slate-400 font-mono uppercase tracking-wider">
+                            <th class="p-4" id="th-cve">CVE / ID</th>
+                            <th class="p-4" id="th-target">Target &amp; Vendor</th>
+                            <th class="p-4" id="th-type">Vulnerability Type</th>
+                            <th class="p-4 text-center" id="th-cvss">CVSS</th>
+                            <th class="p-4" id="th-status">Threat Status</th>
+                            <th class="p-4" id="th-action">Remediation Action</th>
+                            <th class="p-4 text-end" id="th-details">Advisory</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vuln-table-body" class="divide-y divide-slate-800/70 font-mono text-slate-200">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 font-mono">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div id="footer-left">Cyber Threat Intelligence Feed • Bilingual Portal</div>
+            <div id="footer-right">Data sources: NVD, CISA KEV, Android Security Bulletin</div>
+        </div>
+    </footer>
+
+    <!-- Vulnerability Details Modal -->
+    <div id="vuln-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl w-full p-6 space-y-6 relative shadow-2xl overflow-y-auto max-h-[90vh] custom-scroll">
+            
+            <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                <div>
+                    <span id="modal-badge" class="px-2.5 py-0.5 rounded text-xs font-mono font-bold">STATUS</span>
+                    <h2 id="modal-cve" class="text-2xl font-bold font-mono text-white mt-2">CVE ID</h2>
+                    <p id="modal-target" class="text-xs text-slate-400 mt-1 font-mono">Target</p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800 border border-slate-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4 bg-slate-950 p-4 rounded-lg border border-slate-800 text-xs font-mono">
+                    <div>
+                        <span class="text-slate-500 block" id="modal-lbl-cvss">CVSS RATING:</span>
+                        <span id="modal-cvss" class="text-lg font-bold text-amber-400">9.0</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block" id="modal-lbl-type">VULNERABILITY TYPE:</span>
+                        <span id="modal-type" class="text-slate-200 font-semibold">Type</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-mono uppercase text-slate-400 mb-2 font-bold" id="modal-lbl-impact">Threat &amp; Impact Summary</h3>
+                    <p id="modal-desc" class="text-xs text-slate-300 leading-relaxed bg-slate-950/50 p-3.5 rounded-lg border border-slate-800">
+                        Description.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-mono uppercase text-slate-400 mb-2 font-bold" id="modal-lbl-remediation">Remediation Guidance</h3>
+                    <div id="modal-action" class="text-xs text-emerald-400 font-mono bg-emerald-950/30 p-3.5 rounded-lg border border-emerald-900/50 leading-relaxed">
+                        Action.
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-4 flex justify-end">
+                <button onclick="closeModal()" id="modal-close-btn" class="bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs px-4 py-2 rounded-lg transition">
+                    Close Advisory
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Data & Language Switcher Engine -->
+    <script>
+        let currentLang = 'en'; // 'en' or 'ar'
+        let activeFilter = 'all';
+
+        const i18n = {
+            en: {
+                bannerTag: "ACTIVE ZERO-DAY ALERT:",
+                bannerText: "Google Chrome CVE-2026-125350 (Use-After-Free) is under active exploitation in the wild.",
+                bannerBtn: "View Advisory & Patch",
+                subtitle: "Real-World Cyber Threat Intelligence & Vulnerability Tracker",
+                langBtn: "العربية",
+                metricTotal: "Total Vulnerabilities",
+                metricTotalSub: "November 2026 Advisories",
+                metricExploited: "Actively Exploited",
+                metricExploitedSub: "Chrome & Zyxel Zero-Days",
+                metricCvss: "Highest CVSS Rating",
+                metricCvssSub: "Pre-Auth Root Overflow",
+                metricKev: "CISA KEV Listed",
+                metricKevSub: "Mandatory Federal Directives",
+                searchPlaceholder: "Search CVE, vendor, component...",
+                filterLabel: "Filter:",
+                filterAll: "All (8)",
+                filterExploited: "Zero-Days",
+                filterKev: "CISA KEV",
+                filterCritical: "Critical (CVSS 9.0+)",
+                thCve: "CVE / ID",
+                thTarget: "Target & Vendor",
+                thType: "Vulnerability Type",
+                thCvss: "CVSS",
+                thStatus: "Threat Status",
+                thAction: "Remediation Action",
+                thDetails: "Advisory",
+                modalCvss: "CVSS RATING:",
+                modalType: "VULNERABILITY TYPE:",
+                modalImpact: "Threat & Impact Summary",
+                modalRemediation: "Remediation Guidance",
+                modalClose: "Close Advisory",
+                viewBtn: "View →",
+                noMatch: "No matching vulnerabilities found."
+            },
+            ar: {
+                bannerTag: "تنبيه ثغرة صفرية نشطة:",
+                bannerText: "ثغرة متصفح جوجل كروم CVE-2026-125350 خاضعة للاستغلال الفعلي حالياً.",
+                bannerBtn: "عرض التفاصيل والتحديث",
+                subtitle: "منصة استخبارات التهديدات السيبرانية وتتبع الثغرات الأمنية",
+                langBtn: "English",
+                metricTotal: "إجمالي الثغرات المرصودة",
+                metricTotalSub: "نشرة شهر نوفمبر 2026",
+                metricExploited: "ثغرات قيد الاستغلال الفعلي",
+                metricExploitedSub: "ثغرات كروم وزايسل الصفرية",
+                metricCvss: "أعلى تقييم خطورة (CVSS)",
+                metricCvssSub: "طفح حاصرة بصلاحيات جذرية",
+                metricKev: "مدرجة بقائمة CISA KEV",
+                metricKevSub: "توجيهات أمنية اتحادية ملزمة",
+                searchPlaceholder: "ابحث برقم الثغرة CVE، المطور، أو الوصف...",
+                filterLabel: "تصفية:",
+                filterAll: "الكل (8)",
+                filterExploited: "الثغرات الصفرية",
+                filterKev: "قائمة CISA KEV",
+                filterCritical: "حرجة جداً (CVSS 9.0+)",
+                thCve: "رمز الثغرة",
+                thTarget: "الهدف والشركة المبرمجة",
+                thType: "نوع الثغرة الأمنية",
+                thCvss: "الخطورة",
+                thStatus: "حالة التهديد",
+                thAction: "إجراء المعالجة والتحديث",
+                thDetails: "التفاصيل",
+                modalCvss: "مقياس الخطورة (CVSS):",
+                modalType: "نوع الثغرة الأمنية:",
+                modalImpact: "ملخص التهديد والأثر الأمني",
+                modalRemediation: "إرشادات وتوجيهات المعالجة",
+                modalClose: "إغلاق التقرير",
+                viewBtn: "التفاصيل ←",
+                noMatch: "لم يتم العثور على ثغرات تطابق البحث."
+            }
+        };
+
+        const vulnsData = [
+            {
+                id: "CVE-2026-125350",
+                target: { en: "Google Chrome Engine", ar: "محرك متصفح جوجل كروم" },
+                type: { en: "Use-After-Free in XML Engine", ar: "خلل إدارة الذاكرة (Use-After-Free) في محرك XML" },
+                cvss: 8.8,
+                status: { en: "Actively Exploited", ar: "استغلال فعلي نشط" },
+                statusType: "exploited",
+                action: { en: "Update Chrome to 157.0.8103.50+", ar: "تحديث كروم إلى الإصدار 157.0.8103.50+" },
+                desc: { 
+                    en: "A Use-After-Free memory flaw in Chrome's XML parsing engine permits remote attackers to execute arbitrary code or trigger denial-of-service via crafted web pages. Confirmed in active zero-day exploitation.",
+                    ar: "ثغرة أمنية صفرية من نوع (Use-After-Free) في محرك تحليل ملفات XML لمتصفح جوجل كروم تتيح للمهاجم تنفيذ برمجيات خبيثة عن بُعد أو تعطيل الخدمة عند زيارة المستخدم لصفحة ويب ملغومة."
+                },
+                kev: true
+            },
+            {
+                id: "CVE-2026-107441",
+                target: { en: "Zyxel GS1900 Switches", ar: "أجهزة توجيه زايسل GS1900" },
+                type: { en: "Pre-Auth Buffer Overflow", ar: "طفح حاصرة (Buffer Overflow) قبل المصادقة" },
+                cvss: 9.8,
+                status: { en: "Actively Exploited", ar: "استغلال فعلي نشط" },
+                statusType: "exploited",
+                action: { en: "Patch firmware to v2.90 Patch 3+", ar: "ترقية البرمجيات إلى v2.90 Patch 3+" },
+                desc: { 
+                    en: "Pre-authentication buffer overflow vulnerability in dispatcher.cgi allows unauthenticated remote attackers to execute arbitrary commands with root privileges on vulnerable switch models.",
+                    ar: "ثغرة طفح بالحاصرة قبل تسجيل الدخول في ملف dispatcher.cgi تُمكّن المهاجمين عبر الشبكة من تنفيذ أوامر برمجة بصلاحيات كاملة (Root) على أجهزة التوجيه المكتبي."
+                },
+                kev: true
+            },
+            {
+                id: "Android-Nov-2026",
+                target: { en: "Android System Framework", ar: "إطار عمل نظام أندرويد" },
+                type: { en: "Remote Code Execution (RCE)", ar: "تنفيذ برمجيات خبيثة عن بُعد (RCE)" },
+                cvss: 9.1,
+                status: { en: "Vendor Patching", ar: "تحديثات النظام متاحة" },
+                statusType: "patching",
+                action: { en: "Install Nov 2026 Security Update", ar: "تثبيت تحديث الأمان لشهر نوفمبر 2026" },
+                desc: { 
+                    en: "Critical Remote Code Execution vulnerability in Android system framework enabling remote attackers to execute arbitrary code without requiring user interaction or elevated privileges.",
+                    ar: "ثغرة أمنية شديدة الخطورة في إطار عمل أندرويد تمكن المهاجم من تشغيل أوامر خبيثة عن بُعد دون الحاجة للتفاعل مع المستخدم أو صلاحيات إضافية."
+                },
+                kev: false
+            },
+            {
+                id: "CVE-2026-102895",
+                target: { en: "GPUStack AI Infra", ar: "منصة GPUStack للذكاء الاصطناعي" },
+                type: { en: "Improper Authentication", ar: "خلل وآلية مصادقة غير سليمة" },
+                cvss: 8.5,
+                status: { en: "CISA KEV Listed", ar: "مدرجة بقائمة CISA KEV" },
+                statusType: "kev",
+                action: { en: "Update GPUStack container builds", ar: "تحديث برمجيات وحاويات GPUStack" },
+                desc: { 
+                    en: "Flaw in authentication logic permits unauthorized remote network access to private AI model deployment containers and cluster management endpoints.",
+                    ar: "خلل في المنطق البرمجي للمصادقة يسمح بالوصول غير المصرح به عبر الشبكة إلى بيئات نشر نماذج الذكاء الاصطناعي وواجهات التحكم بالخوادم."
+                },
+                kev: true
+            },
+            {
+                id: "CVE-2026-116779",
+                target: { en: "SignalWire FreeSWITCH", ar: "نظام الاتصالات FreeSWITCH" },
+                type: { en: "Remote Code Injection", ar: "حقن برمجي عن بُعد" },
+                cvss: 9.0,
+                status: { en: "CISA KEV Listed", ar: "مدرجة بقائمة CISA KEV" },
+                statusType: "kev",
+                action: { en: "Apply FreeSWITCH safety release", ar: "تحديث نظام الاتصالات إلى أحدث إصدار" },
+                desc: { 
+                    en: "Remote code injection vulnerability in telephony processing daemon allows unauthenticated network actors to execute system commands on host VoIP servers.",
+                    ar: "ثغرة حقن كود برلمجي عن بعد في محرك معالجة المكالمات تتيح للمهاجمين تنفيذ أوامر على خوادم الاتصالات الصوتية (VoIP)."
+                },
+                kev: true
+            },
+            {
+                id: "CVE-2026-123158",
+                target: { en: "OpenBSD OpenSSH", ar: "خوادم بروتوكول OpenSSH" },
+                type: { en: "Auth Logic Bypass", ar: "تجاوز منطق وقواعد المصادقة" },
+                cvss: 8.1,
+                status: { en: "CISA KEV Listed", ar: "مدرجة بقائمة CISA KEV" },
+                statusType: "kev",
+                action: { en: "Upgrade OpenSSH binaries", ar: "تحديث حزم بروتوكول OpenSSH" },
+                desc: { 
+                    en: "Incorrect handling of specific status codes during session authentication allows targeted bypass of authentication controls under non-standard PAM configurations.",
+                    ar: "معالجة خاطئة لرموز الحالة أثناء عملية المصادقة تتيح تجاوز القيود الأمنية في بعض التكوينات الخاصة بخوادم إدارة الاتصال الآمن."
+                },
+                kev: true
+            },
+            {
+                id: "CVE-2026-123218",
+                target: { en: "IBM Aspera Faspex", ar: "منصة نقل الملفات IBM Faspex" },
+                type: { en: "Incorrect Authorization", ar: "صلاحيات وتفويضات خاطئة" },
+                cvss: 7.5,
+                status: { en: "CISA KEV Listed", ar: "مدرجة بقائمة CISA KEV" },
+                statusType: "kev",
+                action: { en: "Update IBM Faspex software", ar: "تحديث منصة IBM Faspex" },
+                desc: { 
+                    en: "Authorization bypass vulnerability enables authenticated users to gain elevated file transfer privileges and access unauthorized data payloads.",
+                    ar: "ثغرة في نظام الصلاحيات تتيح للمستخدمين المسجلين الحصول على صلاحيات عالية لنقل الملفات والوصول إلى بيانات غير مصرح بها."
+                },
+                kev: true
+            },
+            {
+                id: "CVE-2026-83844",
+                target: { en: "Microsoft Paint", ar: "تطبيق الرسام Microsoft Paint" },
+                type: { en: "Out-of-Bounds Memory Read", ar: "قراءة الذاكرة خارج الحدود المسموحة" },
+                cvss: 6.5,
+                status: { en: "Fixed", ar: "تم التحديث" },
+                statusType: "fixed",
+                action: { en: "Store Update v11.2609+", ar: "تحديث التطبيق عبر متجر مايكروسوفت" },
+                desc: { 
+                    en: "An out-of-bounds memory read flaw in MS Paint when processing maliciously crafted image files could leak system memory addresses to local attackers.",
+                    ar: "ثغرة قراءة ذاكرة خارج الحدود عند معالجة صور ملغومة قد تؤدي إلى تسريب عناوين ذاكرة النظام أو توقف التطبيق."
+                },
+                kev: false
+            }
+        ];
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            
+            updateUIStrings();
+            filterTable();
+        }
+
+        function updateUIStrings() {
+            const t = i18n[currentLang];
+            document.getElementById('banner-tag').innerText = t.bannerTag;
+            document.getElementById('banner-text').innerText = t.bannerText;
+            document.getElementById('banner-btn').innerText = t.bannerBtn;
+            document.getElementById('app-subtitle').innerText = t.subtitle;
+            document.getElementById('lang-btn-text').innerText = t.langBtn;
+
+            document.getElementById('metric-total-title').innerText = t.metricTotal;
+            document.getElementById('metric-total-sub').innerText = t.metricTotalSub;
+            document.getElementById('metric-exploited-title').innerText = t.metricExploited;
+            document.getElementById('metric-exploited-sub').innerText = t.metricExploitedSub;
+            document.getElementById('metric-cvss-title').innerText = t.metricCvss;
+            document.getElementById('metric-cvss-sub').innerText = t.metricCvssSub;
+            document.getElementById('metric-kev-title').innerText = t.metricKev;
+            document.getElementById('metric-kev-sub').innerText = t.metricKevSub;
+
+            document.getElementById('search-input').placeholder = t.searchPlaceholder;
+            document.getElementById('filter-label').innerText = t.filterLabel;
+            document.getElementById('filter-all').innerText = t.filterAll;
+            document.getElementById('filter-exploited').innerText = t.filterExploited;
+            document.getElementById('filter-kev').innerText = t.filterKev;
+            document.getElementById('filter-critical').innerText = t.filterCritical;
+
+            document.getElementById('th-cve').innerText = t.thCve;
+            document.getElementById('th-target').innerText = t.thTarget;
+            document.getElementById('th-type').innerText = t.thType;
+            document.getElementById('th-cvss').innerText = t.thCvss;
+            document.getElementById('th-status').innerText = t.thStatus;
+            document.getElementById('th-action').innerText = t.thAction;
+            document.getElementById('th-details').innerText = t.thDetails;
+
+            document.getElementById('modal-lbl-cvss').innerText = t.modalCvss;
+            document.getElementById('modal-lbl-type').innerText = t.modalType;
+            document.getElementById('modal-lbl-impact').innerText = t.modalImpact;
+            document.getElementById('modal-lbl-remediation').innerText = t.modalRemediation;
+            document.getElementById('modal-close-btn').innerText = t.modalClose;
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('vuln-table-body');
+            tbody.innerHTML = '';
+            const t = i18n[currentLang];
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-mono">${t.noMatch}</td></tr>`;
+                return;
+            }
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition cursor-pointer border-b border-slate-800/60';
+                tr.onclick = () => openModal(item.id);
+
+                let statusBadge = '';
+                if (item.statusType === 'exploited') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-bold flex items-center gap-1.5 w-max text-[11px]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> ${item.status[currentLang]}
+                    </span>`;
+                } else if (item.statusType === 'kev') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
+                } else if (item.statusType === 'patching') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-medium w-max text-[11px]">${item.status[currentLang]}</span>`;
+                }
+
+                let cvssColor = 'text-slate-300';
+                if (item.cvss >= 9.0) cvssColor = 'text-red-400 font-bold';
+                else if (item.cvss >= 8.0) cvssColor = 'text-amber-400 font-bold';
+
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-white">${item.id}</td>
+                    <td class="p-4 text-slate-300 font-sans">${item.target[currentLang]}</td>
+                    <td class="p-4 text-slate-400 font-sans">${item.type[currentLang]}</td>
+                    <td class="p-4 text-center font-bold ${cvssColor}">${item.cvss}</td>
+                    <td class="p-4">${statusBadge}</td>
+                    <td class="p-4 text-slate-300 text-xs font-sans">${item.action[currentLang]}</td>
+                    <td class="p-4 text-end">
+                        <button class="text-sky-400 hover:text-sky-300 font-mono text-xs">${t.viewBtn}</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+
+            const filtered = vulnsData.filter(item => {
+                const matchesSearch = item.id.toLowerCase().includes(query) ||
+                                      item.target[currentLang].toLowerCase().includes(query) ||
+                                      item.type[currentLang].toLowerCase().includes(query);
+
+                let matchesFilter = true;
+                if (activeFilter === 'exploited') matchesFilter = (item.statusType === 'exploited');
+                else if (activeFilter === 'kev') matchesFilter = item.kev;
+                else if (activeFilter === 'critical') matchesFilter = (item.cvss >= 9.0);
+
+                return matchesSearch && matchesFilter;
+            });
+
+            renderTable(filtered);
+        }
+
+        function setFilter(filterType) {
+            activeFilter = filterType;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = 'filter-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition';
+            });
+            const activeBtn = document.getElementById(`filter-${filterType}`);
+            if (activeBtn) {
+                activeBtn.className = 'filter-btn active bg-sky-600 text-white px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition';
+            }
+            filterTable();
+        }
+
+        function openModal(id) {
+            const item = vulnsData.find(v => v.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-cve').innerText = item.id;
+            document.getElementById('modal-target').innerText = item.target[currentLang];
+            document.getElementById('modal-cvss').innerText = `${item.cvss} / 10.0`;
+            document.getElementById('modal-type').innerText = item.type[currentLang];
+            document.getElementById('modal-desc').innerText = item.desc[currentLang];
+            document.getElementById('modal-action').innerText = item.action[currentLang];
+
+            const badge = document.getElementById('modal-badge');
+            badge.innerText = item.status[currentLang];
+
+            if (item.statusType === 'exploited') {
+                badge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-red-950 text-red-400 border border-red-800';
+            } else if (item.statusType === 'kev') {
+                badge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-sky-950 text-sky-400 border border-sky-800';
+            } else {
+                badge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800';
+            }
+
+            document.getElementById('vuln-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('vuln-modal').classList.add('hidden');
+        }
+
+        window.onload = () => {
+            updateUIStrings();
+            renderTable(vulnsData);
+        };
+    </script>
+</body>
+</html>
